@@ -23,7 +23,7 @@ module.exports = {
     }
     else {
       let sql = "UPDATE guilds SET forumid = ? WHERE guildid = ?";
-      (await db).run(sql, [forum.id, interaction.id]);
+      (await db).run(sql, [forum.id, interaction.guild.id]);
     }
 
     await interaction.reply({content: "channel set.", ephemeral: true});
