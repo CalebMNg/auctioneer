@@ -69,7 +69,7 @@ module.exports = {
     //update the message
     let bidMessage = await channel.messages.fetch(row.messageid);
     bidMessage.edit(
-      `Current bid: ${bidAttempt}\n by ${
+      `Current bid: ${bidAttempt} by ${
         interaction.user
       }\n Next minimum bid: ${calculateMinIncrease(row.amountbids + 1, bidAttempt)}`
     );

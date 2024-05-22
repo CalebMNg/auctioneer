@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ChannelType } = require("discord.js");
 const { openDb } = require("../handlers/databaseHandler");
+const { DEFAULT_MAX_GROUP_SIZE } = require("../constants");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,15 +12,25 @@ module.exports = {
       option
         .setName("startingbid")
         .setDescription(
-          "(optional) the amount that the first bid must be greater or equal to, default is 0"
+          "(optional) amount that the first bid must be greater or equal to. default is 0"
         )
         .setMinValue(0)
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("maxgroupsize")
+        .setDescription(
+          `(optional) maximum # of bidders that can bid together. default is ${DEFAULT_MAX_GROUP_SIZE}. set to 1 for no groups.`
+        )
+        .setMinValue(1)
     ),
   async execute(interaction) {
     let db = await openDb();
     let guildsql = "SELECT * FROM guilds WHERE guildid = ?";
     let guildRow = await db.get(guildsql, [interaction.guild.id]);
     let startingBid = interaction.options.getNumber("startingbid") ?? 0;
+    let maxgroupsize =
+      interaction.options.getInteger("maxgroupsize") ?? DEFAULT_MAX_GROUP_SIZE;
 
     let auctionChannel = interaction.channel;
     let auctionsql = "SELECT channelid FROM auctions WHERE channelid = ?";
@@ -79,7 +90,8 @@ module.exports = {
 
     //send success messages
 
-    let message = await auctionChannel.send(`Starting bid: ${startingBid}`);
+    let message = await auctionChannel.send(`Starting bid: ${startingBid}\n Max group size: ${maxgroupsize}`);
+    message.pin();
 
     let auctionInputSql =
       "INSERT INTO auctions (guildid, auctionid, channelid, messageid, highestbid, amountbids) VALUES (?, ?, ?, ?, ?, 0)";
@@ -92,8 +104,6 @@ module.exports = {
     ]);
 
     await interaction.reply({ content: "auction started!", ephemeral: true });
-
-    // TODO: pin the highest, or set it to always be the bottom message
   },
   async generateNewAuctionId(db) {
     let sql = "SELECT MAX(auctionid) AS oldid FROM auctions";
