@@ -5,7 +5,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("start")
     .setDescription(
-      "starts an auction in this channel. can only can be run in a forum thread"
+      "manually starts an auction in this channel. can only can be run in a forum thread"
     )
     .addNumberOption((option) =>
       option
@@ -25,7 +25,7 @@ module.exports = {
     let auctionsql = "SELECT channelid FROM auctions WHERE channelid = ?";
     let auctionRow = await db.get(auctionsql, [auctionChannel.id]);
 
-    /// deal with weird server/guild sstuff
+    /// deal with weird server/guild errors
     //server not even found in servers!
     if (!guildRow) {
       await interaction.reply({
@@ -46,8 +46,7 @@ module.exports = {
       return;
     }
 
-    //now deal with channel errors
-
+    ///now deal with channel errors
     //make sure channel is a thread
     if (auctionChannel.type != ChannelType.PublicThread) {
       await interaction.reply({
@@ -75,21 +74,26 @@ module.exports = {
       return;
     }
 
+    //forum channel associated
     let forumChannel = auctionChannel.parent;
 
+    //send success messages
+
+    let message = await auctionChannel.send(`Starting bid: ${startingBid}`);
+
     let auctionInputSql =
-      "INSERT INTO auctions (guildid, auctionid, channelid, highestbid) VALUES (?, ?, ?, ?)";
-    console.log(id)
+      "INSERT INTO auctions (guildid, auctionid, channelid, messageid, highestbid, amountbids) VALUES (?, ?, ?, ?, ?, 0)";
     await db.run(auctionInputSql, [
       interaction.guild.id,
       await this.generateNewAuctionId(db),
       auctionChannel.id,
+      message.id,
       startingBid,
     ]);
 
     await interaction.reply({ content: "auction started!", ephemeral: true });
 
-    await auctionChannel.send(`Starting bid: ${startingBid}`);
+    // TODO: pin the highest, or set it to always be the bottom message
   },
   async generateNewAuctionId(db) {
     let sql = "SELECT MAX(auctionid) AS oldid FROM auctions";

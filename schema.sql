@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS guilds(
 CREATE TABLE IF NOT EXISTS auctions(
     guildid TEXT NOT NULL,
     auctionid TEXT NOT NULL,
-    channelid INT NOT NULL,
+    channelid TEXT NOT NULL,
+    messageid TEXT NOT NULL,
     highestbid REAL NOT NULL,
+    amountbids INT NOT NULL,
     FOREIGN KEY (guildid) REFERENCES guilds(guildid),
     PRIMARY KEY (guildid, auctionid, channelid)
 );
