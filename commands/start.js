@@ -33,8 +33,8 @@ module.exports = {
       interaction.options.getInteger("maxgroupsize") ?? DEFAULT_MAX_GROUP_SIZE;
 
     let auctionChannel = interaction.channel;
-    let auctionsql = "SELECT channelid FROM auctions WHERE channelid = ?";
-    let auctionRow = await db.get(auctionsql, [auctionChannel.id]);
+    let auctionsql = "SELECT channelid, active FROM auctions WHERE channelid = ?";
+    let auctionRows = await db.all(auctionsql, [auctionChannel.id]);
 
     /// deal with weird server/guild errors
     //server not even found in servers!
@@ -77,7 +77,8 @@ module.exports = {
       return;
     }
 
-    if (auctionRow) {
+    //check if any in this channel are still active (1 is true)
+    if (auctionRows.find((row) => row.active === 1)) {
       await interaction.reply({
         content: "an auction has already been started in this channel.",
         ephemeral: true,
@@ -89,7 +90,6 @@ module.exports = {
     let forumChannel = auctionChannel.parent;
 
     //send success messages
-
     let message = await auctionChannel.send(`Starting bid: ${startingBid}\n Max group size: ${maxgroupsize}`);
     message.pin();
 

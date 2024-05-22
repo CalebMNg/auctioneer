@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS auctions(
     messageid TEXT NOT NULL,
     highestbid REAL NOT NULL,
     amountbids INT NOT NULL,
+    active BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (guildid) REFERENCES guilds(guildid),
     PRIMARY KEY (guildid, auctionid, channelid)
 );
