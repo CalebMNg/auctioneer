@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS bidders(
   guildid TEXT NOT NULL,
   auctionid INT NOT NULL,
   bidderid TEXT NOT NULL,
+  amount REAL NOT NULL,
   FOREIGN KEY (guildid) REFERENCES guild(guildid),
   FOREIGN KEY (auctionid) REFERENCES auction(auctionid),
   PRIMARY KEY (guildid, auctionid, bidderid)

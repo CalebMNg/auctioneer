@@ -19,7 +19,7 @@ module.exports = {
     const channel = interaction.channel;
     let db = await openDb();
     let getsql =
-      "SELECT auctionid, messageid, highestbid, amountbids FROM auctions WHERE guildid = ? AND channelid = ?";
+      "SELECT auctionid, messageid, highestbid, amountbids FROM auctions WHERE guildid = ? AND channelid = ? AND active = TRUE";
     let row = await db.get(getsql, [interaction.guild.id, channel.id]);
 
     //not in auction channel
@@ -55,11 +55,12 @@ module.exports = {
     await db.run(deletesql, [interaction.guild.id, row.auctionid]);
 
     let addsql =
-      "INSERT INTO bidders (guildid, auctionid, bidderid) VALUES (?, ?, ?)";
+      "INSERT INTO bidders (guildid, auctionid, bidderid, amount) VALUES (?, ?, ?, ?)";
     await db.run(addsql, [
       interaction.guild.id,
       row.auctionid,
       interaction.user.id,
+      bidAttempt,
     ]);
 
     let updatesql =
