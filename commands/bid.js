@@ -17,10 +17,10 @@ module.exports = {
     ),
   async execute(interaction) {
     const channel = interaction.channel;
-    let db = await openDb();
-    let getsql =
+    const db = await openDb();
+    const getsql =
       "SELECT auctionid, messageid, highestbid, amountbids FROM auctions WHERE guildid = ? AND channelid = ? AND active = TRUE";
-    let row = await db.get(getsql, [interaction.guild.id, channel.id]);
+    const row = await db.get(getsql, [interaction.guild.id, channel.id]);
 
     //not in auction channel
     if (!row) {
@@ -32,10 +32,10 @@ module.exports = {
     }
 
     // could store the minimum bid but its fast anyways
-    let newMinimum = calculateMinIncrease(row.amountbids, row.highestbid);
+    const newMinimum = calculateMinIncrease(row.amountbids, row.highestbid);
     if (row.amountbids == 0) newMinimum = row.highestbid;
 
-    let bidAttempt = interaction.options.getNumber("bid");
+    const bidAttempt = interaction.options.getNumber("bid");
     bidAttempt = round(bidAttempt);
 
 
@@ -51,10 +51,10 @@ module.exports = {
     //TODO: add confirmation if same bidder
 
     //update the tables
-    let deletesql = "DELETE FROM bidders WHERE guildid = ? AND auctionid = ?";
+    const deletesql = "DELETE FROM bidders WHERE guildid = ? AND auctionid = ?";
     await db.run(deletesql, [interaction.guild.id, row.auctionid]);
 
-    let addsql =
+    const addsql =
       "INSERT INTO bidders (guildid, auctionid, bidderid, amount) VALUES (?, ?, ?, ?)";
     await db.run(addsql, [
       interaction.guild.id,
@@ -63,12 +63,12 @@ module.exports = {
       bidAttempt,
     ]);
 
-    let updatesql =
+    const updatesql =
       "UPDATE auctions SET highestbid = ?, amountbids = ? WHERE auctionid = ?";
     await db.run(updatesql, [bidAttempt, row.amountbids + 1, row.auctionid]);
 
     //update the message
-    let bidMessage = await channel.messages.fetch(row.messageid);
+    const bidMessage = await channel.messages.fetch(row.messageid);
     bidMessage.edit(
       `Current bid: ${bidAttempt} by ${
         interaction.user

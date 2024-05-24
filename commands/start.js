@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, ChannelType } = require("discord.js");
 const { openDb } = require("../handlers/databaseHandler");
-const { DEFAULT_MAX_GROUP_SIZE } = require("../constants");
+const { MAX_GROUP_SIZE } = require("../constants");
+const { generateNewAuctionId } = require("../handlers/startAuctionHandler");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -20,21 +21,21 @@ module.exports = {
       option
         .setName("maxgroupsize")
         .setDescription(
-          `(optional) maximum # of bidders that can bid together. default is ${DEFAULT_MAX_GROUP_SIZE}. set to 1 for no groups.`
+          `(optional) maximum # of bidders that can bid together. default is 1.`
         )
-        .setMinValue(1)
+        .setMinValue(1).setMaxValue(MAX_GROUP_SIZE)
     ),
   async execute(interaction) {
-    let db = await openDb();
-    let guildsql = "SELECT * FROM guilds WHERE guildid = ?";
-    let guildRow = await db.get(guildsql, [interaction.guild.id]);
-    let startingBid = interaction.options.getNumber("startingbid") ?? 0;
-    let maxgroupsize =
-      interaction.options.getInteger("maxgroupsize") ?? DEFAULT_MAX_GROUP_SIZE;
+    const db = await openDb();
+    const guildsql = "SELECT * FROM guilds WHERE guildid = ?";
+    const guildRow = await db.get(guildsql, [interaction.guild.id]);
+    const startingBid = interaction.options.getNumber("startingbid") ?? 0;
+    const maxgroupsize =
+      interaction.options.getInteger("maxgroupsize") ?? 1;
 
-    let auctionChannel = interaction.channel;
-    let auctionsql = "SELECT channelid, active FROM auctions WHERE channelid = ?";
-    let auctionRows = await db.all(auctionsql, [auctionChannel.id]);
+    const auctionChannel = interaction.channel;
+    const auctionsql = "SELECT channelid, active FROM auctions WHERE channelid = ?";
+    const auctionRows = await db.all(auctionsql, [auctionChannel.id]);
 
     /// deal with weird server/guild errors
     //server not even found in servers!
@@ -87,31 +88,22 @@ module.exports = {
     }
 
     //forum channel associated
-    let forumChannel = auctionChannel.parent;
+    const forumChannel = auctionChannel.parent;
 
     //send success messages
-    let message = await auctionChannel.send(`Starting bid: ${startingBid}\n Max group size: ${maxgroupsize}`);
+    const message = await auctionChannel.send(`Starting bid: ${startingBid}\n Max group size: ${maxgroupsize}`);
     message.pin();
 
-    let auctionInputSql =
-      "INSERT INTO auctions (guildid, auctionid, channelid, messageid, highestbid, amountbids) VALUES (?, ?, ?, ?, ?, 0)";
+    const auctionInputSql =
+      "INSERT INTO auctions (guildid, auctionid, channelid, messageid, highestbid, amountbids, owner) VALUES (?, ?, ?, ?, ?, 0, TRUE)";
     await db.run(auctionInputSql, [
       interaction.guild.id,
-      await this.generateNewAuctionId(db),
+      await generateNewAuctionId(db),
       auctionChannel.id,
       message.id,
       startingBid,
     ]);
 
     await interaction.reply({ content: "auction started!", ephemeral: true });
-  },
-  async generateNewAuctionId(db) {
-    let sql = "SELECT MAX(auctionid) AS oldid FROM auctions";
-    let row = await db.get(sql, []);
-    let newid = 0;
-    if (row.oldid) {
-      newid = row.oldid + 1;
-    }
-    return newid;
   },
 };

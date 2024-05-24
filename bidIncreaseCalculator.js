@@ -22,8 +22,8 @@ module.exports = {
   ) {
     if (growthFunction === module.exports.GrowthFunction.Linear) {
       //linear increase of marginInc every minToIncMargin
-      numMargins = Math.floor(numBids / minToIncMargin);
-      newMin = prevBid + numMargins * bidIncrement + 0.1 ** DECIMAL_PLACES;
+      const numMargins = Math.floor(numBids / minToIncMargin);
+      const newMin = prevBid + numMargins * bidIncrement + 0.1 ** DECIMAL_PLACES;
       return module.exports.round(newMin);
     }
     if (growthFunction === module.exports.GrowthFunction.Exponential) {

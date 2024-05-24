@@ -1,4 +1,6 @@
 module.exports = {
   DECIMAL_PLACES: 2,
-  DEFAULT_MAX_GROUP_SIZE: 10,
+  DEFAULT_BID: 0,
+  MAX_GROUP_SIZE: 10,
+  MAX_WINNERS_SIZE: 10,
 };

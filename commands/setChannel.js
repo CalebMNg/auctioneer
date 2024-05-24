@@ -14,15 +14,15 @@ module.exports = {
     ),
   async execute(interaction) {
     const forum = interaction.options.getChannel("channel");
-    let db = await openDb();
-    let sql = "SELECT guildid FROM guilds WHERE guildid = ?";
-    let row = await db.get(sql, [interaction.guild.id]);
+    const db = await openDb();
+    const sql = "SELECT guildid FROM guilds WHERE guildid = ?";
+    const row = await db.get(sql, [interaction.guild.id]);
     if (!row) {
-      let sql = "INSERT INTO guilds (guildid, forumid) VALUES (?, ?)";
+      const sql = "INSERT INTO guilds (guildid, forumid) VALUES (?, ?)";
       (await db).run(sql, [interaction.guild.id, forum.id]);
     }
     else {
-      let sql = "UPDATE guilds SET forumid = ? WHERE guildid = ?";
+      const sql = "UPDATE guilds SET forumid = ? WHERE guildid = ?";
       (await db).run(sql, [forum.id, interaction.guild.id]);
     }
 
