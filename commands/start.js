@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, ChannelType } = require("discord.js");
 const { openDb } = require("../handlers/databaseHandler");
 const { MAX_GROUP_SIZE } = require("../constants");
-const { generateNewAuctionId } = require("../handlers/startAuctionHandler");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -94,15 +93,15 @@ module.exports = {
     const message = await auctionChannel.send(`Starting bid: ${startingBid}\n Max group size: ${maxgroupsize}`);
     message.pin();
 
-    const auctionInputSql =
-      "INSERT INTO auctions (guildid, auctionid, channelid, messageid, highestbid, amountbids, owner) VALUES (?, ?, ?, ?, ?, 0, TRUE)";
-    await db.run(auctionInputSql, [
-      interaction.guild.id,
-      await generateNewAuctionId(db),
-      auctionChannel.id,
-      message.id,
-      startingBid,
-    ]);
+    // const auctionInputSql =
+    //   "INSERT INTO auctions (guildid, auctionid, channelid, messageid, highestbid, amountbids, owner) VALUES (?, ?, ?, ?, ?, 0, TRUE)";
+    // await db.run(auctionInputSql, [
+    //   interaction.guild.id,
+    //   await generate,
+    //   auctionChannel.id,
+    //   message.id,
+    //   startingBid,
+    // ]);
 
     await interaction.reply({ content: "auction started!", ephemeral: true });
   },

@@ -1,9 +1,7 @@
-const {
-  Events,
-} = require("discord.js");
+const { Events } = require("discord.js");
 const { openDb } = require("../handlers/databaseHandler");
 const { MAX_WINNERS_SIZE } = require("../constants");
-const { startAuction } = require("../handlers/startAuctionHandler");
+const { startAuctionPrep } = require("../handlers/AuctionHandler");
 
 module.exports = {
   name: Events.ThreadCreate,
@@ -13,6 +11,7 @@ module.exports = {
     const row = await db.get(sql, [thread.guildId]);
     if (!row || row.forumid != thread.parentId) return;
     //do the start function
-    setTimeout(await startAuction, 0.1, thread);
+    setTimeout(() => 0, 0.1);
+    await startAuctionPrep(thread);
   },
 };

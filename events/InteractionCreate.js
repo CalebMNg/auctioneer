@@ -1,6 +1,6 @@
 const { Events } = require("discord.js");
 const { openDb } = require("../handlers/databaseHandler");
-const { handleAuctionButton } = require("../handlers/startAuctionHandler");
+const { handleAuctionButton } = require("../handlers/AuctionHandler");
 
 module.exports = {
   name: Events.InteractionCreate,
