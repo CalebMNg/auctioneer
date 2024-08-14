@@ -47,6 +47,7 @@ const embedParameters = generateEmbedArray();
 module.exports = {
   async startAuctionPrep(channel) {
     //send the settings message
+    console.log(embedParameters[0].row);
     const response = await channel.send({
       embeds: [embedParameters[0].embed],
       components: embedParameters[0].row,

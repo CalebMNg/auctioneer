@@ -12,8 +12,8 @@ const { round } = require("../bidIncreaseCalculator");
 const arrowColor = ButtonStyle.Primary;
 const incDecColor = ButtonStyle.Secondary;
 
-//generates a select menu with integer number options in range [start, end] inclusive.
-function generateSelectMenu(start = 1, end, customId) {
+// generates a select menu with integer number options in range [start, end] inclusive.
+function generateSelectMenu(start, end, customId) {
   const selectOptions = Array();
   for (let i = start; i <= end; i++) {
     selectOptions.push(new StringSelectMenuOptionBuilder().setLabel(`${i}`).setValue(`${i}`))
@@ -22,8 +22,9 @@ function generateSelectMenu(start = 1, end, customId) {
   return select;
 }
 
-//puts the components in each action row array
-function partionActionRows(buttons = Array(), selectMenus = Array()) {
+// puts the components in each action row array
+function partionActionRows({buttons = Array(), selectMenus = Array()}) {
+  //console.log(selectMenus);
   const actionRows = new Array();
   //note: max actionrows are 5 and the last 1 will be left for movement so we can use a total of 4
   if (selectMenus.length * 5 + buttons.length > 5 * 4) {
@@ -37,14 +38,25 @@ function partionActionRows(buttons = Array(), selectMenus = Array()) {
     actionRows.push(
       new ActionRowBuilder().addComponents(buttons.slice(i, i + 5))
     );
+
   }
+  //DEBUG
+  // console.log(actionRows);
+  // console.log("NEW");
   //add the last buttons at the end of the array to their own action row if they exist
   if (buttons.length % 5 != 0)
     actionRows.push(new ActionRowBuilder().addComponents(buttons.slice(i)));
   //select menus
-  for (const menu in selectMenus) {
+  //console.log(selectMenus);
+  for (const menu of selectMenus) {
+    //console.log(menu);
     actionRows.push(new ActionRowBuilder().addComponents(menu));
   }
+
+   console.log(actionRows);
+   //console.log("END");
+
+
   return actionRows;
 }
 //
@@ -53,7 +65,7 @@ function partionActionRows(buttons = Array(), selectMenus = Array()) {
 // amount of winners parameter
 function generateWinnersInfo() {
   const select = generateSelectMenu(start = 1, end = 10, customId = "winners");
-  const winnerRow = partionActionRows(selectMenus = [select]);
+  const winnerRow = partionActionRows({selectMenus: [select]});
   // const increaseButton = new ButtonBuilder()
   //   .setCustomId("winup")
   //   .setLabel("⬆️ +1")
@@ -62,9 +74,6 @@ function generateWinnersInfo() {
   //   .setCustomId("windown")
   //   .setLabel("⬇️ -1")
   //   .setStyle(incDecColor);
-  // const winnerRow = partionActionRows(
-  //   (buttons = [increaseButton, decreaseButton])
-  // );
   const embedWinner = new EmbedBuilder().addFields({
     name: "Maximum number of winners",
     value: "1",
@@ -92,7 +101,7 @@ function generateStartingBidInfo() {
       .setStyle(ButtonStyle.Danger)
   );
 
-  const startRows = partionActionRows((buttons = startChangeButtons));
+  const startRows = partionActionRows({buttons: startChangeButtons});
 
   const embedStart = new EmbedBuilder().addFields({
     name: "Minimum start bid amount",
@@ -112,12 +121,9 @@ function generateGroupBiddersInfo() {
   //   .setCustomId("groupdown")
   //   .setLabel("⬇️ -1")
   //   .setStyle(incDecColor);
-  // const groupRow = partionActionRows(
-  //   (buttons = [increaseButton, decreaseButton])
-  // );
 
   const select = generateSelectMenu(start = 1, end = 10, customId = "groups")
-  const groupRow = partionActionRows(selectMenus = [select]);
+  const groupRow = partionActionRows({selectMenus: [select]});
   const embedGroup = new EmbedBuilder().addFields({
     name: "Maximum number of users in a group that can bid together",
     value: "1",
@@ -150,20 +156,25 @@ module.exports = {
     const groupbidders = generateGroupBiddersInfo();
     const startbid = generateStartingBidInfo();
 
+
     embeds.push(winners);
     embeds.push(groupbidders);
     embeds.push(startbid);
 
+
     for (let i = 0; i < embeds.length; i++) {
-      numRows = embeds[i].row.length;
-      if (i != 0) embeds[i].row[numRows - 1].addComponents(leftButton);
+      let numRows = embeds[i].row.length;
+      const movement = new ActionRowBuilder();
+      if (i != 0) movement.addComponents(leftButton);
       if (i != embeds.length - 1)
-        embeds[i].row[numRows - 1].addComponents(rightButton);
-      embeds[i].row[numRows - 1].addComponents(startButton);
+        movement.addComponents(rightButton);
+      movement.addComponents(startButton);
+      embeds[i].row.push(movement);
       embeds[i].embed.setTitle("Auction settings").setFooter({
         text: "use ⬅️ and ➡️ to look through all of the options. use /help for more info on what each parameter does.",
       });
     }
+    //console.log(embeds);
     return embeds;
   },
 };
